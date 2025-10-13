@@ -1,9 +1,17 @@
-// Package lines is a multipurpose line truncator, that ensures outputted lines do not exceed a specified length ever.
+// Package lines is a multipurpose ASCII line truncator, that ensures outputted lines do not exceed a specified length ever.
+// I was unimpressed with the packages I found for quality, speed, or both.
+//
+// There is a major blindspot here with regards to multibyte characters. That's not a thing I am working toward due to its inherent
+// complexity and the purpose of this mod. PRs are welcome, but better packages probably exist
+// elsewhere.
 package lines
 
-import "strings"
+import (
+	"io"
+	"strings"
+)
 
-// RawLinifyString returns a string that has newlines inserted every max characters, irrespective of word boundaries
+// RawLinifyString returns a string that has newlines inserted every max characters, irrespective of word boundaries.
 func RawLinifyString(s string, max int) string {
 	// sanity
 	if max < 1 {
@@ -15,7 +23,8 @@ func RawLinifyString(s string, max int) string {
 		newString string
 	)
 
-	for _, c := range s {
+	var c rune
+	for _, c = range s {
 		if cc >= max {
 			newString += "\n" + string(c)
 			cc = 1 // not zero as we are appending a rune there
@@ -39,7 +48,10 @@ func LinifyString(s string, max int) string {
 		llen      int
 	)
 
-	for word := range strings.FieldsSeq(s) {
+	// :easybutton: using Fields. We should do our own
+	// tokenizing if this gets traction.
+	var word string
+	for word = range strings.FieldsSeq(s) {
 		if len(word) > max {
 			// are you KIDDING ME RIGHT NOW?!
 			if llen > 0 {
@@ -62,4 +74,52 @@ func LinifyString(s string, max int) string {
 		}
 	}
 	return newString
+}
+
+// LinifyStream consumes a string chan and pushed linified results to the specified io.StringWriter.
+// An error is returned IFF the io.StringWriter returns an error.
+// This is only meaningfully efficient for arbitrarily massive sets of strings. Unless you are
+// linifying 'The Tommyknockers' or 'War and Peace', I doubt this is what you're looking for.
+func LinifyStream(stream <-chan string, out io.StringWriter, max int) error {
+	// each string across stream is a word.
+	// case and punctuation preserved.
+	// We add spaces and newlines only
+	var (
+		llen int
+	)
+
+	var word string
+	for word = range stream {
+		if len(word) > max {
+			// are you KIDDING ME RIGHT NOW?!
+			if llen > 0 {
+				if _, err := out.WriteString("\n"); err != nil {
+					return err
+				}
+			}
+			llen = 0
+			if _, err := out.WriteString(RawLinifyString(word, max) + "\n"); err != nil {
+				return err
+			}
+		} else if llen > 0 && llen+1+len(word) > max {
+			// there's a word already, and it blows out max
+			llen = len(word)
+			if _, err := out.WriteString("\n" + word); err != nil {
+				return err
+			}
+		} else if llen == 0 {
+			// first word in the line, just append the word
+			llen = len(word)
+			if _, err := out.WriteString(word); err != nil {
+				return err
+			}
+		} else {
+			// llen > 0, so we append space and the word
+			llen += 1 + len(word)
+			if _, err := out.WriteString(" " + word); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }

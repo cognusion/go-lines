@@ -7,12 +7,18 @@
 * [Index](#pkg-index)
 
 ## <a name="pkg-overview">Overview</a>
-Package lines is a multipurpose line truncator, that ensures outputted lines do not exceed a specified length ever.
+Package lines is a multipurpose ASCII line truncator, that ensures outputted lines do not exceed a specified length ever.
+I was unimpressed with the packages I found for quality, speed, or both.
+
+There is a major blindspot here with regards to multibyte characters. That's not a thing I am working toward due to its inherent
+complexity and the purpose of this mod. PRs are welcome, but better packages probably exist
+elsewhere.
 
 
 
 
 ## <a name="pkg-index">Index</a>
+* [func LinifyStream(stream &lt;-chan string, out io.StringWriter, max int) error](#LinifyStream)
 * [func LinifyString(s string, max int) string](#LinifyString)
 * [func RawLinifyString(s string, max int) string](#RawLinifyString)
 
@@ -24,7 +30,18 @@ Package lines is a multipurpose line truncator, that ensures outputted lines do 
 
 
 
-## <a name="LinifyString">func</a> [LinifyString](https://github.com/cognusion/go-lines/tree/master/lines.go?s=721:764#L31)
+## <a name="LinifyStream">func</a> [LinifyStream](https://github.com/cognusion/go-lines/tree/master/lines.go?s=2286:2361#L83)
+``` go
+func LinifyStream(stream <-chan string, out io.StringWriter, max int) error
+```
+LinifyStream consumes a string chan and pushed linified results to the specified io.StringWriter.
+An error is returned IFF the io.StringWriter returns an error.
+This is only meaningfully efficient for arbitrarily massive sets of strings. Unless you are
+linifying 'The Tommyknockers' or 'War and Peace', I doubt this is what you're looking for.
+
+
+
+## <a name="LinifyString">func</a> [LinifyString](https://github.com/cognusion/go-lines/tree/master/lines.go?s=1070:1113#L40)
 ``` go
 func LinifyString(s string, max int) string
 ```
@@ -32,11 +49,11 @@ LinifyString returns a string that has newlines inserted between word boundaries
 
 
 
-## <a name="RawLinifyString">func</a> [RawLinifyString](https://github.com/cognusion/go-lines/tree/master/lines.go?s=269:315#L7)
+## <a name="RawLinifyString">func</a> [RawLinifyString](https://github.com/cognusion/go-lines/tree/master/lines.go?s=607:653#L15)
 ``` go
 func RawLinifyString(s string, max int) string
 ```
-RawLinifyString returns a string that has newlines inserted every max characters, irrespective of word boundaries
+RawLinifyString returns a string that has newlines inserted every max characters, irrespective of word boundaries.
 
 
 
