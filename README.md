@@ -5,6 +5,7 @@
 
 * [Overview](#pkg-overview)
 * [Index](#pkg-index)
+* [Examples](#pkg-examples)
 
 ## <a name="pkg-overview">Overview</a>
 Package lines is a multipurpose ASCII line truncator, that ensures outputted lines do not exceed a specified length ever.
@@ -22,6 +23,8 @@ elsewhere.
 * [func LinifyString(s string, max int) string](#LinifyString)
 * [func RawLinifyString(s string, max int) string](#RawLinifyString)
 
+#### <a name="pkg-examples">Examples</a>
+* [LinifyStream](#example-linifystream)
 
 #### <a name="pkg-files">Package files</a>
 [lines.go](https://github.com/cognusion/go-lines/tree/master/lines.go)
@@ -39,6 +42,46 @@ An error is returned IFF the io.StringWriter returns an error.
 This is only meaningfully efficient for arbitrarily massive sets of strings. Unless you are
 linifying 'The Tommyknockers' or 'War and Peace', I doubt this is what you're looking for.
 
+
+##### Example LinifyStream:
+``` go
+// You are going to have a scanner with an unknown,
+// never-ending buffer of words that need to be
+// assembled with spaces between, and newlines on or
+// before some max line length.
+fields := strings.FieldsSeq("This line is not that long. But imagine it is much longer.")
+
+// create a channel for those words to pipe over
+wordChan := make(chan string)
+
+// create a possibly never-ending stream to send words to the wordChan
+go func() {
+    defer close(wordChan) // super important, if we ever want to end
+    for word := range fields {
+        wordChan <- word
+    }
+}()
+
+// Linify the stream from wordChan, write to os.StdOut, each line max 10 characters.
+err := LinifyStream(wordChan, os.Stdout, 20)
+if err != nil {
+    // for real?!
+    panic(err)
+}
+// Output: This line is not
+//that long. But
+//imagine it is much
+//longer.
+```
+
+Output:
+
+```
+This line is not
+that long. But
+imagine it is much
+longer.
+```
 
 
 ## <a name="LinifyString">func</a> [LinifyString](https://github.com/cognusion/go-lines/tree/master/lines.go?s=1070:1113#L40)

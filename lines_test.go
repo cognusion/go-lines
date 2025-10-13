@@ -1,14 +1,17 @@
 package lines
 
 import (
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/cognusion/go-recyclable"
+	"github.com/fortytw2/leaktest"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func Test_RawLinifyString(t *testing.T) {
+	defer leaktest.Check(t)()
 
 	var (
 		max   = 20
@@ -27,6 +30,7 @@ func Test_RawLinifyString(t *testing.T) {
 }
 
 func Test_LinifyString(t *testing.T) {
+	defer leaktest.Check(t)()
 
 	var (
 		max    = 20
@@ -53,7 +57,40 @@ func Test_LinifyString(t *testing.T) {
 	})
 }
 
+func ExampleLinifyStream() {
+
+	// You are going to have a scanner with an unknown,
+	// never-ending buffer of words that need to be
+	// assembled with spaces between, and newlines on or
+	// before some max line length.
+	fields := strings.FieldsSeq("This line is not that long. But imagine it is much longer.")
+
+	// create a channel for those words to pipe over
+	wordChan := make(chan string)
+
+	// create a possibly never-ending stream to send words to the wordChan
+	go func() {
+		defer close(wordChan) // super important, if we ever want to end
+		for word := range fields {
+			wordChan <- word
+		}
+	}()
+
+	// Linify the stream from wordChan, write to os.StdOut, each line max 10 characters.
+	err := LinifyStream(wordChan, os.Stdout, 20)
+	if err != nil {
+		// for real?!
+		panic(err)
+	}
+	// Output: This line is not
+	//that long. But
+	//imagine it is much
+	//longer.
+
+}
+
 func Test_LinifyStream(t *testing.T) {
+	defer leaktest.Check(t)()
 
 	var (
 		max    = 20

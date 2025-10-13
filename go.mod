@@ -4,6 +4,7 @@ go 1.25.2
 
 require (
 	github.com/cognusion/go-recyclable v1.3.0
+	github.com/fortytw2/leaktest v1.3.0
 	github.com/smartystreets/goconvey v1.8.1
 )
 
