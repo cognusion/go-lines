@@ -34,7 +34,7 @@ elsewhere.
 ``` go
 func LinifyStream(stream <-chan string, out io.StringWriter, max int) error
 ```
-LinifyStream consumes a string chan and pushed linified results to the specified io.StringWriter.
+LinifyStream consumes a string chan and pushes linified results to the specified io.StringWriter.
 An error is returned IFF the io.StringWriter returns an error.
 This is only meaningfully efficient for arbitrarily massive sets of strings. Unless you are
 linifying 'The Tommyknockers' or 'War and Peace', I doubt this is what you're looking for.
