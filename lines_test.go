@@ -1,8 +1,10 @@
 package lines
 
 import (
+	"strings"
 	"testing"
 
+	"github.com/cognusion/go-recyclable"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -48,6 +50,45 @@ func Test_LinifyString(t *testing.T) {
 
 		So(len(leline), ShouldBeGreaterThan, max)
 		So(len(LinifyString(leline, max)), ShouldEqual, 445)
+	})
+}
+
+func Test_LinifyStream(t *testing.T) {
+
+	var (
+		max    = 20
+		lword  = "areyoukiddingmerightnow"
+		linlw  = "areyoukiddingmeright\nnow\n"
+		leline = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+	)
+
+	fields := strings.Fields(leline)
+	schan := make(chan string)
+	buff := &recyclable.Buffer{}
+
+	// start the stream
+	go func() {
+		defer close(schan)
+		for _, f := range fields {
+			schan <- f
+		}
+	}()
+	Convey("When a long line is streamed Linified, the results are expected.", t, FailureContinues, func() {
+		err := LinifyStream(schan, buff, max)
+		So(err, ShouldBeNil)
+		SoMsg("Incorrect number of newlines added", buff.Len(), ShouldEqual, 445)
+
+		Convey("When a stupid word is streamed, larger than max, the results are expected", FailureContinues, func() {
+			buff.Reset(make([]byte, 0))
+			schan = make(chan string, 1)
+			schan <- lword // queue up the word
+			close(schan)
+			err := LinifyStream(schan, buff, max)
+			So(err, ShouldBeNil)
+			So(buff.String(), ShouldEqual, linlw)
+
+		})
+
 	})
 }
 
