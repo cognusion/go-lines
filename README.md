@@ -19,7 +19,8 @@ elsewhere.
 
 
 ## <a name="pkg-index">Index</a>
-* [func LinifyStream(stream &lt;-chan string, out io.StringWriter, max int, separator string) error](#LinifyStream)
+* [func LinifyStream(stream &lt;-chan string, out io.StringWriter, max int) error](#LinifyStream)
+* [func LinifyStreamSeparator(stream &lt;-chan string, out io.StringWriter, max int, separator string) error](#LinifyStreamSeparator)
 * [func LinifyString(s string, max int) string](#LinifyString)
 * [func RawLinifyString(s string, max int) string](#RawLinifyString)
 
@@ -33,12 +34,11 @@ elsewhere.
 
 
 
-## <a name="LinifyStream">func</a> [LinifyStream](https://github.com/cognusion/go-lines/tree/master/lines.go?s=2347:2440#L84)
+## <a name="LinifyStream">func</a> [LinifyStream](https://github.com/cognusion/go-lines/tree/master/lines.go?s=2286:2361#L83)
 ``` go
-func LinifyStream(stream <-chan string, out io.StringWriter, max int, separator string) error
+func LinifyStream(stream <-chan string, out io.StringWriter, max int) error
 ```
 LinifyStream consumes a string chan and pushes linified results to the specified io.StringWriter.
-The separator may specify what is used to separate words.
 An error is returned IFF the io.StringWriter returns an error.
 This is only meaningfully efficient for arbitrarily massive sets of strings. Unless you are
 linifying 'The Tommyknockers' or 'War and Peace', I doubt this is what you're looking for.
@@ -64,7 +64,7 @@ go func() {
 }()
 
 // Linify the stream from wordChan, write to os.StdOut, each line max 20 characters, separate by space.
-err := LinifyStream(wordChan, os.Stdout, 20, " ")
+err := LinifyStream(wordChan, os.Stdout, 20)
 if err != nil {
     // for real?!
     panic(err)
@@ -83,6 +83,18 @@ that long. But
 imagine it is much
 longer.
 ```
+
+
+## <a name="LinifyStreamSeparator">func</a> [LinifyStreamSeparator](https://github.com/cognusion/go-lines/tree/master/lines.go?s=2845:2947#L92)
+``` go
+func LinifyStreamSeparator(stream <-chan string, out io.StringWriter, max int, separator string) error
+```
+LinifyStreamSeparator consumes a string chan and pushes linified results to the specified io.StringWriter.
+The separator may specify what is used to separate words.
+An error is returned IFF the io.StringWriter returns an error.
+This is only meaningfully efficient for arbitrarily massive sets of strings. Unless you are
+linifying 'The Tommyknockers' or 'War and Peace', I doubt this is what you're looking for.
+
 
 
 ## <a name="LinifyString">func</a> [LinifyString](https://github.com/cognusion/go-lines/tree/master/lines.go?s=1070:1113#L40)

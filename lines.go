@@ -77,11 +77,19 @@ func LinifyString(s string, max int) string {
 }
 
 // LinifyStream consumes a string chan and pushes linified results to the specified io.StringWriter.
+// An error is returned IFF the io.StringWriter returns an error.
+// This is only meaningfully efficient for arbitrarily massive sets of strings. Unless you are
+// linifying 'The Tommyknockers' or 'War and Peace', I doubt this is what you're looking for.
+func LinifyStream(stream <-chan string, out io.StringWriter, max int) error {
+	return LinifyStreamSeparator(stream, out, max, "")
+}
+
+// LinifyStreamSeparator consumes a string chan and pushes linified results to the specified io.StringWriter.
 // The separator may specify what is used to separate words.
 // An error is returned IFF the io.StringWriter returns an error.
 // This is only meaningfully efficient for arbitrarily massive sets of strings. Unless you are
 // linifying 'The Tommyknockers' or 'War and Peace', I doubt this is what you're looking for.
-func LinifyStream(stream <-chan string, out io.StringWriter, max int, separator string) error {
+func LinifyStreamSeparator(stream <-chan string, out io.StringWriter, max int, separator string) error {
 	// each string across stream is a word.
 	// case and punctuation preserved.
 	// We add spaces and newlines only
@@ -94,18 +102,18 @@ func LinifyStream(stream <-chan string, out io.StringWriter, max int, separator 
 		if len(word) > max {
 			// are you KIDDING ME RIGHT NOW?!
 			if llen > 0 {
-				if _, err := out.WriteString("\n"); err != nil {
+				if _, err := out.WriteString(separator + "\n"); err != nil {
 					return err
 				}
 			}
 			llen = 0
-			if _, err := out.WriteString(RawLinifyString(word, max) + "\n"); err != nil {
+			if _, err := out.WriteString(RawLinifyString(word, max-len(separator)) + separator + "\n"); err != nil {
 				return err
 			}
-		} else if llen > 0 && llen+1+len(word) > max {
+		} else if llen > 0 && llen+len(separator)+1+len(word) > max {
 			// there's a word already, and it blows out max
 			llen = len(word)
-			if _, err := out.WriteString("\n" + word); err != nil {
+			if _, err := out.WriteString(separator + "\n" + word); err != nil {
 				return err
 			}
 		} else if llen == 0 {
@@ -116,8 +124,8 @@ func LinifyStream(stream <-chan string, out io.StringWriter, max int, separator 
 			}
 		} else {
 			// llen > 0, so we append a separator and the word
-			llen += len(separator) + len(word)
-			if _, err := out.WriteString(separator + word); err != nil {
+			llen += len(separator) + 1 + len(word)
+			if _, err := out.WriteString(separator + " " + word); err != nil {
 				return err
 			}
 		}
