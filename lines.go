@@ -116,7 +116,7 @@ func LinifyStream(stream <-chan string, out io.StringWriter, max int, separator 
 			}
 		} else {
 			// llen > 0, so we append a separator and the word
-			llen += 1 + len(word)
+			llen += len(separator) + len(word)
 			if _, err := out.WriteString(separator + word); err != nil {
 				return err
 			}
