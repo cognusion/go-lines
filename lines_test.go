@@ -125,6 +125,35 @@ func Test_LinifyStreamSeparator(t *testing.T) {
 			So(buff.String(), ShouldEqual, linlw)
 
 		})
+	})
+}
+
+func Test_LinifyStreamSeparatorLineMax(t *testing.T) {
+	defer leaktest.Check(t)()
+
+	var (
+		max    = 20
+		maxL   = 5
+		leline = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+	)
+
+	fields := strings.Fields(leline)
+	schan := make(chan string)
+	buff := &recyclable.Buffer{}
+
+	// start the stream
+	go func() {
+		defer close(schan)
+		for _, f := range fields {
+			schan <- f
+		}
+	}()
+
+	Convey("When a long line is streamed Linified, and a max line count is specified, the results are expected.", t, FailureContinues, func() {
+
+		err := LinifyStreamSeparatorLineMax(schan, buff, max, maxL, "")
+		So(err, ShouldBeNil)
+		SoMsg("Incorrect number of newlines added", buff.Len(), ShouldEqual, 89)
 
 	})
 }

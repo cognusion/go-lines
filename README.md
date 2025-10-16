@@ -21,6 +21,7 @@ elsewhere.
 ## <a name="pkg-index">Index</a>
 * [func LinifyStream(stream &lt;-chan string, out io.StringWriter, max int) error](#LinifyStream)
 * [func LinifyStreamSeparator(stream &lt;-chan string, out io.StringWriter, max int, separator string) error](#LinifyStreamSeparator)
+* [func LinifyStreamSeparatorLineMax(stream &lt;-chan string, out io.StringWriter, maxWidth, maxLines int, separator string) error](#LinifyStreamSeparatorLineMax)
 * [func LinifyString(s string, max int) string](#LinifyString)
 * [func RawLinifyString(s string, max int) string](#RawLinifyString)
 
@@ -85,11 +86,24 @@ longer.
 ```
 
 
-## <a name="LinifyStreamSeparator">func</a> [LinifyStreamSeparator](https://github.com/cognusion/go-lines/tree/master/lines.go?s=2845:2947#L92)
+## <a name="LinifyStreamSeparator">func</a> [LinifyStreamSeparator](https://github.com/cognusion/go-lines/tree/master/lines.go?s=2855:2957#L92)
 ``` go
 func LinifyStreamSeparator(stream <-chan string, out io.StringWriter, max int, separator string) error
 ```
 LinifyStreamSeparator consumes a string chan and pushes linified results to the specified io.StringWriter.
+The separator may specify what is used to separate words.
+An error is returned IFF the io.StringWriter returns an error.
+This is only meaningfully efficient for arbitrarily massive sets of strings. Unless you are
+linifying 'The Tommyknockers' or 'War and Peace', I doubt this is what you're looking for.
+
+
+
+## <a name="LinifyStreamSeparatorLineMax">func</a> [LinifyStreamSeparatorLineMax](https://github.com/cognusion/go-lines/tree/master/lines.go?s=3588:3712#L102)
+``` go
+func LinifyStreamSeparatorLineMax(stream <-chan string, out io.StringWriter, maxWidth, maxLines int, separator string) error
+```
+LinifyStreamSeparatorLineMax consumes a string chan and pushes linified results to the specified io.StringWriter.
+After maxLines are written to the io.StringWriter, no more will be written, and further incoming strings are discarded.
 The separator may specify what is used to separate words.
 An error is returned IFF the io.StringWriter returns an error.
 This is only meaningfully efficient for arbitrarily massive sets of strings. Unless you are
