@@ -77,10 +77,11 @@ func LinifyString(s string, max int) string {
 }
 
 // LinifyStream consumes a string chan and pushes linified results to the specified io.StringWriter.
+// The separator may specify what is used to separate words.
 // An error is returned IFF the io.StringWriter returns an error.
 // This is only meaningfully efficient for arbitrarily massive sets of strings. Unless you are
 // linifying 'The Tommyknockers' or 'War and Peace', I doubt this is what you're looking for.
-func LinifyStream(stream <-chan string, out io.StringWriter, max int) error {
+func LinifyStream(stream <-chan string, out io.StringWriter, max int, separator string) error {
 	// each string across stream is a word.
 	// case and punctuation preserved.
 	// We add spaces and newlines only
@@ -114,9 +115,9 @@ func LinifyStream(stream <-chan string, out io.StringWriter, max int) error {
 				return err
 			}
 		} else {
-			// llen > 0, so we append space and the word
+			// llen > 0, so we append a separator and the word
 			llen += 1 + len(word)
-			if _, err := out.WriteString(" " + word); err != nil {
+			if _, err := out.WriteString(separator + word); err != nil {
 				return err
 			}
 		}

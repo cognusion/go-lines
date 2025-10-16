@@ -19,7 +19,7 @@ elsewhere.
 
 
 ## <a name="pkg-index">Index</a>
-* [func LinifyStream(stream &lt;-chan string, out io.StringWriter, max int) error](#LinifyStream)
+* [func LinifyStream(stream &lt;-chan string, out io.StringWriter, max int, separator string) error](#LinifyStream)
 * [func LinifyString(s string, max int) string](#LinifyString)
 * [func RawLinifyString(s string, max int) string](#RawLinifyString)
 
@@ -33,11 +33,12 @@ elsewhere.
 
 
 
-## <a name="LinifyStream">func</a> [LinifyStream](https://github.com/cognusion/go-lines/tree/master/lines.go?s=2286:2361#L83)
+## <a name="LinifyStream">func</a> [LinifyStream](https://github.com/cognusion/go-lines/tree/master/lines.go?s=2347:2440#L84)
 ``` go
-func LinifyStream(stream <-chan string, out io.StringWriter, max int) error
+func LinifyStream(stream <-chan string, out io.StringWriter, max int, separator string) error
 ```
 LinifyStream consumes a string chan and pushes linified results to the specified io.StringWriter.
+The separator may specify what is used to separate words.
 An error is returned IFF the io.StringWriter returns an error.
 This is only meaningfully efficient for arbitrarily massive sets of strings. Unless you are
 linifying 'The Tommyknockers' or 'War and Peace', I doubt this is what you're looking for.
@@ -62,8 +63,8 @@ go func() {
     }
 }()
 
-// Linify the stream from wordChan, write to os.StdOut, each line max 10 characters.
-err := LinifyStream(wordChan, os.Stdout, 20)
+// Linify the stream from wordChan, write to os.StdOut, each line max 20 characters, separate by space.
+err := LinifyStream(wordChan, os.Stdout, 20, " ")
 if err != nil {
     // for real?!
     panic(err)

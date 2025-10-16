@@ -76,8 +76,8 @@ func ExampleLinifyStream() {
 		}
 	}()
 
-	// Linify the stream from wordChan, write to os.StdOut, each line max 10 characters.
-	err := LinifyStream(wordChan, os.Stdout, 20)
+	// Linify the stream from wordChan, write to os.StdOut, each line max 20 characters, separate by space.
+	err := LinifyStream(wordChan, os.Stdout, 20, " ")
 	if err != nil {
 		// for real?!
 		panic(err)
@@ -111,7 +111,7 @@ func Test_LinifyStream(t *testing.T) {
 		}
 	}()
 	Convey("When a long line is streamed Linified, the results are expected.", t, FailureContinues, func() {
-		err := LinifyStream(schan, buff, max)
+		err := LinifyStream(schan, buff, max, " ")
 		So(err, ShouldBeNil)
 		SoMsg("Incorrect number of newlines added", buff.Len(), ShouldEqual, 445)
 
@@ -120,7 +120,7 @@ func Test_LinifyStream(t *testing.T) {
 			schan = make(chan string, 1)
 			schan <- lword // queue up the word
 			close(schan)
-			err := LinifyStream(schan, buff, max)
+			err := LinifyStream(schan, buff, max, " ")
 			So(err, ShouldBeNil)
 			So(buff.String(), ShouldEqual, linlw)
 
